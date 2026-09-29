@@ -1,80 +1,114 @@
+import { useState } from "react";
 import {
-  Image,
+  FlatList,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
-export default function ProfileScreen() {
+type GroceryItem = {
+  id: string;
+  name: string;
+  completed: boolean;
+};
+
+export default function HomeScreen() {
+  const [input, setInput] = useState("");
+  const [groceries, setGroceries] = useState<GroceryItem[]>([]);
+
+  const addItem = () => {
+    if (input.trim() === "") return;
+
+    const newItem: GroceryItem = {
+      id: Date.now().toString(),
+      name: input.trim(),
+      completed: false,
+    };
+
+    setGroceries([...groceries, newItem]);
+    setInput("");
+  };
+
+  const toggleComplete = (id: string) => {
+    setGroceries(
+      groceries.map((item) =>
+        item.id === id
+          ? { ...item, completed: !item.completed }
+          : item
+      )
+    );
+  };
+
+  const deleteItem = (id: string) => {
+    setGroceries(
+      groceries.filter((item) => item.id !== id)
+    );
+  };
+
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>🛒 Grocery Tracker</Text>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Profile</Text>
+      <Text style={styles.subtitle}>
+        Add and manage your grocery items
+      </Text>
+
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter grocery item..."
+          value={input}
+          onChangeText={setInput}
+        />
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={addItem}
+        >
+          <Text style={styles.buttonText}>Add</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Profile Section */}
-      <View style={styles.profileSection}>
-        <Image
-  source={require("../../assets/profile.jpg")}
-  style={styles.profileImage}
-/>
+      <Text style={styles.listTitle}>
+        Grocery List ({groceries.length})
+      </Text>
 
-        <Text style={styles.name}>Jason Sorilo</Text>
-
-        <Text style={styles.role}>BSCS Student</Text>
-
-        <Text style={styles.description}>
-          Computer Science student interested in programming,
-          mobile application development, and technology.
-        </Text>
-      </View>
-
-      {/* Information Card */}
-      <View style={styles.card}>
-
-        <Text style={styles.cardTitle}>Personal Information</Text>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Course</Text>
-          <Text style={styles.value}>BS Computer Science</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>Year Level</Text>
-          <Text style={styles.value}>3rd Year</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.label}>University</Text>
-          <Text style={styles.value}>
-            Northwest Samar State University
+      <FlatList
+        data={groceries}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>
+            No grocery items yet. Add one above!
           </Text>
-        </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.item}>
+            <TouchableOpacity
+              style={styles.itemName}
+              onPress={() => toggleComplete(item.id)}
+            >
+              <Text
+                style={[
+                  styles.itemText,
+                  item.completed && styles.completed,
+                ]}
+              >
+                {item.completed ? "✓ " : "○ "}
+                {item.name}
+              </Text>
+            </TouchableOpacity>
 
-      </View>
-
-      {/* Skills */}
-      <View style={styles.card}>
-
-        <Text style={styles.cardTitle}>Skills</Text>
-
-        <View style={styles.skillsContainer}>
-          <Text style={styles.skill}>Cooking</Text>
-          <Text style={styles.skill}>Playing Sepaktakraw</Text>
-          <Text style={styles.skill}>Dancing</Text>
-          <Text style={styles.skill}>Programming</Text>
-        </View>
-
-      </View>
-
-      {/* Button */}
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>View Profile</Text>
-      </TouchableOpacity>
-
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => deleteItem(item.id)}
+            >
+              <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
     </View>
   );
 }
@@ -82,116 +116,92 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
-    paddingTop: 50,
-  },
-
-  header: {
-    backgroundColor: "#2e86de",
+    backgroundColor: "violet",
     padding: 20,
-    alignItems: "center",
+    paddingTop: 60,
   },
 
-  headerTitle: {
-    color: "#ffffff",
-    fontSize: 24,
+  title: {
+    fontSize: 28,
     fontWeight: "bold",
-  },
-
-  profileSection: {
-    alignItems: "center",
-    padding: 20,
-  },
-
-  profileImage: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    marginBottom: 12,
-  },
-
-  name: {
-    fontSize: 25,
-    fontWeight: "bold",
-    color: "#222",
-  },
-
-  role: {
-    fontSize: 17,
-    color: "#2e86de",
-    marginTop: 5,
-  },
-
-  description: {
     textAlign: "center",
+  },
+
+  subtitle: {
+    fontSize: 16,
     color: "#666",
-    fontSize: 14,
-    marginTop: 10,
-    paddingHorizontal: 20,
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 25,
   },
 
-  card: {
-    backgroundColor: "#ffffff",
-    marginHorizontal: 20,
-    marginBottom: 15,
-    padding: 18,
-    borderRadius: 12,
-  },
-
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: "#222",
-  },
-
-  infoRow: {
+  inputRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eeeeee",
+    marginBottom: 25,
   },
 
-  label: {
-    color: "#777",
-    fontSize: 14,
-  },
-
-  value: {
-    color: "#222",
-    fontSize: 14,
-    fontWeight: "500",
-    maxWidth: "60%",
-    textAlign: "right",
-  },
-
-  skillsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-
-  skill: {
-    backgroundColor: "#e8f1ff",
-    color: "#2e86de",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    overflow: "hidden",
-  },
-
-  button: {
-    backgroundColor: "#2e86de",
-    marginHorizontal: 20,
-    padding: 14,
+  input: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+  },
+
+  addButton: {
+    backgroundColor: "#2e86de",
+    paddingHorizontal: 20,
+    justifyContent: "center",
     alignItems: "center",
+    borderRadius: 8,
+    marginLeft: 8,
   },
 
   buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
+    color: "#fff",
     fontWeight: "bold",
+  },
+
+  listTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+
+  emptyText: {
+    textAlign: "center",
+    color: "#777",
+    marginTop: 30,
+  },
+
+  item: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+
+  itemName: {
+    flex: 1,
+  },
+
+  itemText: {
+    fontSize: 17,
+  },
+
+  completed: {
+    textDecorationLine: "line-through",
+    color: "#888",
+  },
+
+  deleteButton: {
+    backgroundColor: "#e74c3c",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
   },
 });
