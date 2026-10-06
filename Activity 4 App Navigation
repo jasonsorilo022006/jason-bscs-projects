@@ -1,0 +1,192 @@
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+const Stack = createNativeStackNavigator();
+
+// HOME SCREEN
+function HomeScreen({ navigation }) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>🍳 My Recipe Book</Text>
+
+      <Text style={styles.subtitle}>
+        Welcome to my Recipe Book!
+      </Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Recipe List')}
+      >
+        <Text style={styles.buttonText}>View Recipes</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// RECIPE LIST SCREEN
+function RecipeListScreen({ navigation }) {
+  const recipes = [
+    {
+      name: 'Chicken Adobo',
+      price: '₱150',
+      description:
+        'Chicken cooked with soy sauce, vinegar, garlic, and spices.',
+    },
+    {
+      name: 'Spaghetti',
+      price: '₱120',
+      description:
+        'Classic spaghetti with tomato sauce and ground meat.',
+    },
+    {
+      name: 'Pancakes',
+      price: '₱80',
+      description:
+        'Soft and fluffy pancakes served with syrup.',
+    },
+  ];
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>📖 Recipe List</Text>
+
+      {recipes.map((recipe, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.recipeButton}
+          onPress={() =>
+            navigation.navigate('Recipe Details', {
+              name: recipe.name,
+              price: recipe.price,
+              description: recipe.description,
+            })
+          }
+        >
+          <Text style={styles.recipeName}>
+            {recipe.name}
+          </Text>
+
+          <Text>{recipe.price}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+// RECIPE DETAILS SCREEN
+function RecipeDetailsScreen({ navigation, route }) {
+  const { name, price, description } = route.params;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{name}</Text>
+
+      <Text style={styles.info}>
+        Price: {price}
+      </Text>
+
+      <Text style={styles.description}>
+        {description}
+      </Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.goBack()}
+      >
+        <Text style={styles.buttonText}>
+          ← Go Back
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// NAVIGATION
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+        />
+
+        <Stack.Screen
+          name="Recipe List"
+          component={RecipeListScreen}
+        />
+
+        <Stack.Screen
+          name="Recipe Details"
+          component={RecipeDetailsScreen}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// STYLES
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+
+  button: {
+    backgroundColor: '#e67e22',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 25,
+    minWidth: 180,
+    alignItems: 'center',
+  },
+
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  recipeButton: {
+    width: '100%',
+    padding: 18,
+    marginVertical: 8,
+    borderRadius: 10,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+
+  recipeName: {
+    fontSize: 19,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+
+  info: {
+    fontSize: 18,
+    marginBottom: 15,
+  },
+
+  description: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+});
