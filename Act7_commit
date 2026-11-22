@@ -1,0 +1,343 @@
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+type Task = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
+const STORAGE_KEY = '@my_tasks';
+
+export default function Index() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [taskInput, setTaskInput] = useState('');
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // READ: Load saved tasks when app opens
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        const savedTasks = await AsyncStorage.getItem(STORAGE_KEY);
+
+        if (savedTasks !== null) {
+          setTasks(JSON.parse(savedTasks));
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Failed to load tasks.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTasks();
+  }, []);
+
+  // SAVE: Save tasks locally
+  const saveTasks = async (updatedTasks: Task[]) => {
+    try {
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(updatedTasks)
+      );
+
+      setTasks(updatedTasks);
+      return true;
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save tasks.');
+      return false;
+    }
+  };
+
+  // CREATE
+  const addTask = async () => {
+    if (!taskInput.trim()) {
+      Alert.alert('Warning', 'Please enter a task.');
+      return;
+    }
+
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: taskInput.trim(),
+      completed: false,
+    };
+
+    const success = await saveTasks([...tasks, newTask]);
+
+    if (success) setTaskInput('');
+  };
+
+  // UPDATE
+  const updateTask = async () => {
+    if (!editText.trim()) {
+      Alert.alert('Warning', 'Task cannot be empty.');
+      return;
+    }
+
+    const updatedTasks = tasks.map(task =>
+      task.id === editId
+        ? { ...task, title: editText.trim() }
+        : task
+    );
+
+    const success = await saveTasks(updatedTasks);
+
+    if (success) {
+      setEditId(null);
+      setEditText('');
+    }
+  };
+
+  // DELETE
+  const deleteTask = async (id: string) => {
+    const updatedTasks = tasks.filter(task => task.id !== id);
+    await saveTasks(updatedTasks);
+  };
+
+  // Mark as completed
+  const toggleTask = async (id: string) => {
+    const updatedTasks = tasks.map(task =>
+      task.id === id
+        ? { ...task, completed: !task.completed }
+        : task
+    );
+
+    await saveTasks(updatedTasks);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>My To-Do List</Text>
+      <Text style={styles.subtitle}>Organize your daily tasks</Text>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter a new task..."
+          value={taskInput}
+          onChangeText={setTaskInput}
+        />
+
+        <TouchableOpacity style={styles.addButton} onPress={addTask}>
+          <Text style={styles.buttonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionTitle}>
+        My Tasks ({tasks.length})
+      </Text>
+
+      {loading ? (
+        <Text style={styles.emptyText}>Loading tasks...</Text>
+      ) : (
+        <FlatList
+          data={tasks}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.taskCard}>
+              {editId === item.id ? (
+                <View style={styles.editContainer}>
+                  <TextInput
+                    style={styles.editInput}
+                    value={editText}
+                    onChangeText={setEditText}
+                  />
+
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={updateTask}
+                  >
+                    <Text style={styles.buttonText}>Save</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setEditId(null)}
+                  >
+                    <Text style={styles.buttonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.taskInfo}
+                    onPress={() => toggleTask(item.id)}
+                  >
+                    <Text style={styles.check}>
+                      {item.completed ? '☑' : '☐'}
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.taskText,
+                        item.completed && styles.completedText,
+                      ]}
+                    >
+                      {item.title}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <View style={styles.actions}>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => {
+                        setEditId(item.id);
+                        setEditText(item.title);
+                      }}
+                    >
+                      <Text style={styles.buttonText}>Edit</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => deleteTask(item.id)}
+                    >
+                      <Text style={styles.buttonText}>Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </View>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>
+              No tasks yet. Add your first task!
+            </Text>
+          }
+        />
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F4F6F9',
+    padding: 20,
+    paddingTop: 60,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#263B5E',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#777',
+    textAlign: 'center',
+    marginBottom: 25,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    marginBottom: 25,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#FFF',
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  addButton: {
+    backgroundColor: '#263B5E',
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    borderRadius: 10,
+    marginLeft: 8,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#263B5E',
+  },
+  taskCard: {
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 2,
+  },
+  taskInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  check: {
+    fontSize: 24,
+    marginRight: 12,
+    color: '#263B5E',
+  },
+  taskText: {
+    fontSize: 16,
+    flex: 1,
+    color: '#333',
+  },
+  completedText: {
+    textDecorationLine: 'line-through',
+    color: '#999',
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  editButton: {
+    backgroundColor: '#E6A23C',
+    padding: 9,
+    borderRadius: 7,
+    marginRight: 8,
+  },
+  deleteButton: {
+    backgroundColor: '#D9534F',
+    padding: 9,
+    borderRadius: 7,
+  },
+  saveButton: {
+    backgroundColor: '#28A745',
+    padding: 9,
+    borderRadius: 7,
+    marginRight: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#777',
+    padding: 9,
+    borderRadius: 7,
+  },
+  editContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#CCC',
+    borderRadius: 7,
+    padding: 10,
+    marginRight: 5,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#888',
+    marginTop: 30,
+    fontSize: 15,
+  },
+});
