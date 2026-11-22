@@ -1,0 +1,105 @@
+import java.util.Scanner;
+
+public class SariSariStore {
+
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+
+        String[] names = {
+            "Bugas (per kg)",
+            "Salmon dilata",
+            "Cup noodles",
+            "3in1 kape",
+            "Asukar (per kg)",
+            "Mantika",
+            "bonay (per piece)",
+            "Tinapay",
+
+        };
+
+        String[] codes = {"001", "002", "003", "004", "005", "006","007", "008"};
+        double[] prices = {55.00, 25.00, 15.00, 8.00, 70.00, 25.00, 15.00 ,10.00};
+        int[] quantities = new int[8];
+
+        double total = 0;
+
+        System.out.println("================================");
+        System.out.println("     SARI-SARI STORE SYSTEM");
+        System.out.println("================================");
+        System.out.println("CODE  PRODUCT             PRICE");
+
+        for (int i = 0; i < names.length; i++) {
+            System.out.printf("%s  %-18s ₱%.2f%n",
+                    codes[i], names[i], prices[i]);
+        }
+
+        System.out.println("\nEnter quantity for each product:");
+
+        for (int i = 0; i < names.length; i++) {
+            while (true) {
+                System.out.print(names[i] + ": ");
+
+                if (input.hasNextInt()) {
+                    int quantity = input.nextInt();
+
+                    if (quantity >= 0) {
+                        quantities[i] = quantity;
+                        break;
+                    }
+                } else {
+                    input.next();
+                }
+
+                System.out.println(
+                    "Invalid quantity. Enter zero or a positive whole number."
+                );
+            }
+        }
+
+        System.out.println("\n========== RECEIPT ==========");
+
+        for (int i = 0; i < names.length; i++) {
+            if (quantities[i] > 0) {
+                double subtotal = prices[i] * quantities[i];
+                total += subtotal;
+
+                System.out.printf(
+                    "%-18s x %d = ₱%.2f%n",
+                    names[i], quantities[i], subtotal
+                );
+            }
+        }
+
+        System.out.printf("%nTOTAL AMOUNT: ₱%.2f%n", total);
+
+        double payment;
+
+        while (true) {
+            System.out.print("Enter payment: ₱");
+
+            if (input.hasNextDouble()) {
+                payment = input.nextDouble();
+
+                if (Double.isFinite(payment) && payment >= total
+                        && payment >= 0) {
+                    break;
+                }
+            } else {
+                input.next();
+            }
+
+            System.out.println(
+                "Invalid or insufficient payment. Try again."
+            );
+        }
+
+        double change = payment - total;
+
+        System.out.printf("PAYMENT:      ₱%.2f%n", payment);
+        System.out.printf("CHANGE:       ₱%.2f%n", change);
+        System.out.println("==============================");
+        System.out.println("Thank you for shopping!");
+
+        input.close();
+    }
+}
