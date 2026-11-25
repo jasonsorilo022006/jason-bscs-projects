@@ -1,0 +1,254 @@
+import { useState } from "react";
+import "./App.css";
+
+export default function App() {
+  const [output, setOutput] = useState("Welcome to Jason's Code MCO!");
+  const [showEx1, setShowEx1] = useState(false);
+  const [showEx2, setShowEx2] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // =========================
+  // EXERCISE 1
+  // =========================
+
+  const act1 = () => {
+    alert("Welcome to JavaScript!");
+  };
+
+  const act2 = () => {
+    let name = "Jason";
+    let age = 20;
+    let isStudent = true;
+
+    alert(
+      `Name: ${name}\nAge: ${age}\nIs Student: ${isStudent}`
+    );
+  };
+
+  const act3 = () => {
+    let num1 = 10;
+    let num2 = 5;
+
+    alert(
+      `Sum: ${num1 + num2}
+Difference: ${num1 - num2}
+Product: ${num1 * num2}
+Quotient: ${num1 / num2}`
+    );
+  };
+
+  const act4 = () => {
+    let userName = prompt("Enter your name:");
+    let favoriteNumber = prompt("Enter your favorite number:");
+
+    alert(
+      `Hello ${userName}! Your favorite number is ${favoriteNumber}`
+    );
+  };
+
+  const act5 = () => {
+    let age = prompt("Enter your age:");
+
+    if (age >= 18) {
+      alert("You are eligible.");
+    } else {
+      alert("You are not eligible.");
+    }
+  };
+
+  const act6 = () => {
+    let result = "";
+
+    for (let i = 1; i <= 10; i++) {
+      result += `For Loop: ${i}\n`;
+    }
+
+    let count = 10;
+
+    while (count >= 1) {
+      result += `While Loop: ${count}\n`;
+      count--;
+    }
+
+    alert(result);
+  };
+
+  const act7 = () => {
+    alert("Button Clicked! This is Activity 7.");
+  };
+
+  // =========================
+  // EXERCISE 2
+  // =========================
+
+  const ex2act1 = () => {
+    document.body.style.backgroundColor =
+      "#" + Math.floor(Math.random() * 16777215).toString(16);
+  };
+
+  const ex2act2 = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const ex2act3 = () => {
+    setOutput(" New Item Added!");
+  };
+
+  const ex2act4 = () => {
+    setOutput("Hi my name is Jason Sorilo, 20 years old.");
+  };
+
+  const ex2act5 = () => {
+    setOutput("Character Counter Activity");
+  };
+
+  const ex2act6 = () => {
+    let num1 = parseInt(prompt("Enter first number:"));
+    let num2 = parseInt(prompt("Enter second number:"));
+
+    alert("Sum is: " + (num1 + num2));
+  };
+
+  const ex2act7 = () => {
+    setOutput("🖼️ Image Gallery Activity");
+  };
+
+  const ex2act8 = () => {
+    setOutput("📝 Mini To-Do List Activity");
+  };
+
+  // =========================
+  // NAVIGATION
+  // =========================
+
+  const home = () => {
+    setOutput("📍 Address: Purok 1, Brgy Cacaransan, Calbayog City");
+  };
+
+  const about = () => {
+    setOutput(
+      "Jason Montejo Sorilo | 20 years old | BSCS 2-A | SepakTakraw Player"
+    );
+  };
+
+  const contact = () => {
+    setOutput("📞 09610837091");
+  };
+
+  // =========================
+  // EXERCISE 4
+  // =========================
+
+  const gradeCalculator = () => {
+    let quiz = parseFloat(prompt("Enter Quiz Average:"));
+    let exam = parseFloat(prompt("Enter Exam Score:"));
+    let mco = parseFloat(prompt("Enter MCO Score:"));
+
+    const grade = quiz * 0.2 + exam * 0.3 + mco * 0.5;
+
+    let equivalent = "";
+
+    if (grade >= 90) equivalent = "A";
+    else if (grade >= 80) equivalent = "B";
+    else if (grade >= 70) equivalent = "C";
+    else if (grade >= 60) equivalent = "D";
+    else equivalent = "F";
+
+    setOutput(
+      `Final Grade: ${grade.toFixed(
+        2
+      )} | Grade Equivalent: ${equivalent}`
+    );
+  };
+
+  return (
+    <div className={darkMode ? "dark app" : "app"}>
+      
+      {/* HEADER */}
+      <div className="header">
+        <div className="profile">
+          <img
+            src="images/profile.jpg"
+            alt="profile"
+            className="profile-pic"
+          />
+
+          <div className="profile-info">
+            <h1>JASON'S CODE MCO</h1>
+            <p>Jason Sorilo</p>
+            <p>BSCS Student</p>
+          </div>
+        </div>
+      </div>
+
+      {/* MENU */}
+      <div className="menubar">
+        <button onClick={home}>Home</button>
+        <button onClick={about}>About</button>
+        <button onClick={contact}>Contact</button>
+      </div>
+
+      {/* MAIN */}
+      <div className="main">
+
+        {/* SIDE MENU */}
+        <div className="sidemenu">
+
+          <h3>JavaScript Activities</h3>
+
+          {/* Exercise 1 */}
+          <button onClick={() => setShowEx1(!showEx1)}>
+            Exercise 1
+          </button>
+
+          {showEx1 && (
+            <div>
+              <button onClick={act1}>Activity 1</button>
+              <button onClick={act2}>Activity 2</button>
+              <button onClick={act3}>Activity 3</button>
+              <button onClick={act4}>Activity 4</button>
+              <button onClick={act5}>Activity 5</button>
+              <button onClick={act6}>Activity 6</button>
+              <button onClick={act7}>Activity 7</button>
+            </div>
+          )}
+
+          {/* Exercise 2 */}
+          <button onClick={() => setShowEx2(!showEx2)}>
+            Exercise 2
+          </button>
+
+          {showEx2 && (
+            <div>
+              <button onClick={ex2act1}>Activity 1</button>
+              <button onClick={ex2act2}>Dark Mode</button>
+              <button onClick={ex2act3}>Activity 3</button>
+              <button onClick={ex2act4}>Activity 4</button>
+              <button onClick={ex2act5}>Activity 5</button>
+              <button onClick={ex2act6}>Activity 6</button>
+              <button onClick={ex2act7}>Activity 7</button>
+              <button onClick={ex2act8}>Activity 8</button>
+            </div>
+          )}
+
+          {/* Exercise 4 */}
+          <button onClick={gradeCalculator}>
+            Exercise 4
+          </button>
+        </div>
+
+        {/* CONTENT */}
+        <div className="content">
+          <div id="output">
+            <h2>{output}</h2>
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER */}
+      <div className="footer">
+        <p>All rights reserve 2026</p>
+      </div>
+    </div>
+  );
+}
