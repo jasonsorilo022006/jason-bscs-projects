@@ -1,10 +1,10 @@
-let studentName = "Justin Sorilo";
-let age = 18;
+let studentName = "Buknoy";
+let age = 30;
 let passingGrade = 75;
 let total = 0;
 let average = 0;
 
-let subjects = ["Filipino","Esp","Mapeh","English"];
+let subjects = ["Science","Arpa","Mapeh","English"];
 let grades = [85,87,91,95];
 let remarks = ["Passed","Passed","Passed","Passed"];
 
@@ -47,5 +47,5 @@ for(let i = 0;i <grades.length; i++){
 // END PROGRAM //
 
 console.log("\n=================================");
-console.log("        SALAMAT                   ");
+console.log("        MATSALAB                  ");
 console.log("=================================");
