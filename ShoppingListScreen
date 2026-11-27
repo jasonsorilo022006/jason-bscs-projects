@@ -1,0 +1,146 @@
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { colors } from '../../constants/colors';
+import { typography, spacing, radius } from '../../constants/theme';
+import { useAppStore } from '../../store/useAppStore';
+
+export default function ShoppingListScreen() {
+  // =================== === LOGIC === ===================
+
+  const items = useAppStore((s) => s.shoppingListItems);
+  const toggleChecked = useAppStore((s) => s.toggleItemChecked);
+  const removeItem = useAppStore((s) => s.removeItem);
+  const clearChecked = useAppStore((s) => s.clearCheckedItems);
+  const clearAll = useAppStore((s) => s.clearAllItems);
+
+  const checkedCount = items.filter((i) => i.checked).length;
+
+  // =================== === UI === ===================
+  return (
+    <View style={styles.container}>
+      {/* CONDITIONAL RENDERING gamit ang `&&`: ipapakita lang ang hanay ng
+          Clear buttons kung may laman ang listahan. */}
+      {items.length > 0 && (
+        <View style={styles.actionsRow}>
+          {/* `disabled`: hindi mapipindot kung walang naka-tsek.
+              `onPress={clearChecked}`: ipinapasa ang function mismo (walang
+              panaklong) para tawagin ng button kapag pinindot. */}
+          <TouchableOpacity onPress={clearChecked} disabled={checkedCount === 0}>
+            {/* Style na array: ang ikalawa ay idinadagdag LANG kung totoo
+                ang kondisyon (kulay-abo kapag walang naka-tsek). */}
+            <Text style={[styles.actionText, checkedCount === 0 && styles.actionTextDisabled]}>
+              Clear checked
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={clearAll}>
+            <Text style={styles.actionText}>Clear all</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <FlatList
+        data={items}
+        // Ang `item.id` ay natatanging STRING na gawa ng ingredientMerge
+        // (hal. "garlic__cloves"), kaya hindi na kailangan ng String().
+        keyExtractor={(item) => item.id} // (tingnan ang utils/ingredientMerge.js)
+        // Array ng style: laging `styles.body`; at kapag WALANG LAMAN ang
+        // listahan, idinaragdag ang `styles.emptyBody` (dagdag na espasyo sa
+        // itaas para hindi dikit sa gilid ang mensahe, dahil nakatago ang
+        // Clear buttons kapag walang item).
+        contentContainerStyle={[styles.body, items.length === 0 && styles.emptyBody,]}
+        // Lumalabas kapag WALANG LAMAN ang `data`.
+        ListEmptyComponent={
+          <Text style={typography.bodyMuted}>
+            Your list is empty. Open a recipe and tap "Add to Shopping List" to add ingredients here.
+          </Text>
+        }
+        // Tinatawag kada item. `{ item }` ay destructuring ng ibinibigay ng
+        // FlatList.
+        renderItem={({ item }) => (
+          <View style={styles.row}>
+            {/* Ang checkbox at text ay ISANG pindutan; ang "X" sa kanan ay
+                hiwalay at mas maliit na pindutan. Ang `() =>` ay "ipinagpapaliban"
+                ang tawag: tatawagin lang ang toggleChecked kapag pinindot,
+                hindi habang nagre-render. */}
+            <TouchableOpacity
+              style={styles.rowMain}
+              onPress={() => toggleChecked(item.id)}
+              activeOpacity={0.7}
+            >
+              {/* Ternary: iba ang icon at kulay kapag naka-tsek. */}
+              <Ionicons
+                name={item.checked ? 'checkbox' : 'square-outline'}
+                size={22}
+                color={item.checked ? colors.sage : colors.inkLight}
+              />
+              <View style={styles.rowText}>
+                {/* Kapag `checked`, idinaragdag ang style na may guhit sa
+                    gitna ng text (`line-through`) at kulay-abo. */}
+                <Text style={[typography.body, item.checked && styles.checkedText]}>
+                  {formatAmount(item.amount)} {item.unit} {item.name}
+                </Text>
+                {/* `.join(', ')` ay pinagdudugtong ang array ng mga pamagat
+                    ng recipe sa isang text: "Pasta, Soup". */}
+                <Text style={typography.label}>from: {item.fromRecipes.join(', ')}</Text>
+              </View>
+            </TouchableOpacity>
+            {/* `hitSlop` ay pinalalawak ang lugar na tumatanggap ng pindot
+                lampas sa nakikitang icon (mas madaling pindutin ang maliit
+                na "X"). */}
+            <TouchableOpacity onPress={() => removeItem(item.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons name="close" size={18} color={colors.inkFaint} />
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    </View>
+  );
+}
+
+// HELPER (logic): inaayos ang pagpapakita ng bilang. Ang buong numero (2)
+// ay ipapakita nang ganoon; ang may decimal ay gagawing 2 decimal at aalisin
+// ang sobrang zero (1.50 -> "1.5"). Ang regex na `/\.?0+$/` ay "alisin ang
+// mga zero (at ang tuldok kung may kasama) sa dulo." Ang amount ay maaaring
+// may decimal dahil nagsasama-sama ang bilang mula sa maraming recipe.
+function formatAmount(amount) {
+  return Number.isInteger(amount) ? amount : amount.toFixed(2).replace(/\.?0+$/, '');
+}
+
+// Mga style (JavaScript object, hindi CSS). Paalala sa mga mahalagang style:
+//   `flexDirection: 'row'`            magkatabi imbes na patong-patong
+//   `justifyContent: 'space-between'` itinutulak sa magkabilang dulo
+//   `flex: 1`                         kunin ang lahat ng natitirang espasyo
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.paper },
+  actionsRow: {
+    padding: spacing.lg,
+    paddingBottom: spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // itinutulak ang dalawang button sa kanang gilid
+    gap: spacing.md,
+  },
+  actionText: { color: colors.paprika, fontFamily: typography.label.fontFamily, fontSize: 12 },
+  actionTextDisabled: { color: colors.inkFaint },
+  body: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  // Dagdag na espasyo sa itaas kapag walang laman ang listahan.
+  emptyBody: {
+    paddingTop: spacing.lg,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // checkbox/text sa kaliwa, "X" sa kanan
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  rowMain: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: spacing.sm },
+  rowText: { flex: 1 },
+  checkedText: { textDecorationLine: 'line-through', color: colors.inkFaint },
+});
