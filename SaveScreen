@@ -1,0 +1,50 @@
+import { View, StyleSheet, FlatList, Text } from 'react-native';
+import { colors } from '../../constants/colors';
+import { typography, spacing } from '../../constants/theme';
+import RecipeCard from '../../components/RecipeCard';
+import { useAppStore } from '../../store/useAppStore';
+
+export default function SavedRecipesScreen({ navigation }) {
+  // =================== === LOGIC === ===================
+
+  const bookmarks = useAppStore((s) => s.bookmarks);
+  const toggleBookmark = useAppStore((s) => s.toggleBookmark);
+
+  // =================== === UI === ===================
+  return (
+    <View style={styles.container}>
+      <FlatList
+       
+        data={[...bookmarks].reverse()}
+      
+        keyExtractor={(item) => String(item.id)}
+        contentContainerStyle={styles.body}
+        
+        ListEmptyComponent={
+          <Text style={typography.bodyMuted}>
+            No saved recipes yet. Tap the bookmark icon on any recipe to save it here.
+          </Text>
+        }
+        
+        renderItem={({ item }) => (
+          <RecipeCard
+            recipe={item}
+          
+            onToggleSave={() => toggleBookmark(item)}
+           
+            onPress={() => navigation.navigate('RecipeStack', {
+              screen: 'RecipeDetail',
+              params: { recipeId: item.id },
+            })}
+          />
+        )}
+      />
+    </View>
+  );
+}
+
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.paper },
+  body: { padding: spacing.lg, paddingBottom: spacing.xxl },
+});
